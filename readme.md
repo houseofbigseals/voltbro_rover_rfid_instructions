@@ -4,16 +4,51 @@
 Важно:  
 Шаговый мотор мы подключаем к ардуино через драйвер uln2003, а RFID модуль - напрямую к GPIO-пинам Raspberry.  
 
+----------------------------------------------------------------------------------------------
+
 А. Подключение шагового мотора  
 
 [Примеры подключения и работы с шаговым мотором]( http://robotosha.ru/arduino/stepper-motor-28byj-uln2003-arduino.html)  
 [Документация на драйвер ULN2003](https://rudatasheet.ru/datasheets/uln2003/)  
-[Документация на шаговый мотор BYJ48](https://www.instructables.com/id/BYJ48-Stepper-Motor/)  
+[Еще пример подключения шагового мотора BYJ48](https://www.instructables.com/id/BYJ48-Stepper-Motor/)  
 
 Стандартная библиотека Stepper не умеет по умолчанию работать с моторами BYJ48, поэтому надо использовать библиотеку AccelStepper.  
 Исходный код [здесь](https://github.com/d235j/AccelStepper/)  
 Вы можете найти ее в менеджере библиотек Arduino IDE  
-Пример работы с этой библиотекой в файле stepper_motor_test.ino  
+Простой пример работы с этой библиотекой, взятый по одной из приложенных выше ссылок:  
+
+```
+#include<Arduino.h>
+#include<AccelStepper.h>
+ 
+#define HALFSTEP 8   
+
+// Определение пинов для управления двигателем
+#define motorPin1  8 // IN1 на 1-м драйвере ULN2003
+#define motorPin2  9 // IN2 на 1-м драйвере ULN2003
+#define motorPin3  10 // IN3 на 1-м драйвере ULN2003
+#define motorPin4  11 // IN4 на 1-м драйвере ULN2003
+ 
+// Инициализируемся с последовательностью выводов IN1-IN3-IN2-IN4 
+// для использования AccelStepper с 28BYJ-48
+AccelStepper stepper1(HALFSTEP, motorPin1, motorPin3, motorPin2, motorPin4);
+ 
+void setup(){
+  stepper1.setMaxSpeed(1000.0);
+  stepper1.setAcceleration(10.0);
+  stepper1.setSpeed(100);
+  stepper1.moveTo(2048);
+}
+ 
+void loop(){
+  // Изменяем направление, если шаговик достигает заданного положения
+  if(stepper1.distanceToGo()==0)
+    stepper1.moveTo(-stepper1.currentPosition());
+  stepper1.run();
+}
+```
+
+------------------------------------------------------------------------------
 
 Б. Подключение RFID модуля  
 
@@ -34,6 +69,8 @@
 ```
 sudo raspi-config
 ```
+
+Затем выбрать среди меню интерфейсов SPI и выбрать "enable".  
 
 2. Перезапустить Raspberry чтобы активировать spi   
 
